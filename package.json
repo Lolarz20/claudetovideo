@@ -1,0 +1,40 @@
+{
+  "name": "claudetovideo",
+  "version": "0.1.0",
+  "description": "Export Claude Design HTML animations to MP4 video",
+  "bin": {
+    "claudetovideo": "bin/cli.js"
+  },
+  "scripts": {
+    "postinstall": "playwright install chromium",
+    "convert": "node bin/cli.js"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "playwright": "^1.48.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "author": "Lolarz20",
+  "keywords": [
+    "claude",
+    "claude-design",
+    "anthropic",
+    "html-to-video",
+    "mp4",
+    "ffmpeg",
+    "playwright",
+    "animation",
+    "export"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lolarz20/claudetovideo.git"
+  },
+  "homepage": "https://github.com/Lolarz20/claudetovideo#readme",
+  "bugs": {
+    "url": "https://github.com/Lolarz20/claudetovideo/issues"
+  }
+}

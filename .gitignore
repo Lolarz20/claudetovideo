@@ -1,0 +1,9 @@
+node_modules/
+*.mp4
+!codaro-hq.mp4
+*.webm
+*.gif
+*.jpg
+.DS_Store
+.claude/
+_tmp/

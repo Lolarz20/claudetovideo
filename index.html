@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>claudetovideo — Convert Claude Design HTML to MP4</title>
+  <meta name="description" content="Open source CLI that converts Claude Design HTML animations into high-quality MP4 video. Headless Chromium + deterministic timeline seeking + ffmpeg. Zero system dependencies.">
+  <link rel="canonical" href="https://lolarz20.github.io/claudetovideo/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="claudetovideo — Convert Claude Design HTML to MP4">
+  <meta property="og:description" content="Open source CLI that converts Claude Design HTML animations into high-quality MP4 video.">
+  <meta property="og:url" content="https://lolarz20.github.io/claudetovideo/">
+  <meta property="og:image" content="https://lolarz20.github.io/claudetovideo/og.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="claudetovideo">
+  <meta name="twitter:description" content="Convert Claude Design HTML animations to high-quality MP4 video.">
+  <meta name="twitter:image" content="https://lolarz20.github.io/claudetovideo/og.png">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "claudetovideo",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "description": "Open source CLI that converts Claude Design HTML animations to MP4 video.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "softwareVersion": "0.1.0",
+    "license": "https://opensource.org/licenses/MIT"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-elev: #13131a;
+      --border: rgba(255,255,255,0.08);
+      --text: #e8e6f0;
+      --text-muted: #8a8797;
+      --accent: #7d45b5;
+      --accent-soft: rgba(125,69,181,0.15);
+      --code-bg: #0e0e14;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    main { max-width: 760px; margin: 0 auto; padding: 80px 24px 120px; }
+
+    header { margin-bottom: 56px; }
+    h1 {
+      font-size: 38px; font-weight: 700; letter-spacing: -0.02em;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .tagline { font-size: 18px; color: var(--text-muted); margin-bottom: 20px; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .badge {
+      display: inline-block; font: 11px/1 ui-monospace, Menlo, Consolas, monospace;
+      padding: 5px 9px; border-radius: 999px;
+      background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .cta {
+      display: inline-block; padding: 10px 18px; border-radius: 8px;
+      background: var(--accent); color: white; font-weight: 600;
+      margin-right: 8px;
+    }
+    .cta:hover { background: #8e56c7; text-decoration: none; }
+    .cta-secondary {
+      display: inline-block; padding: 10px 18px; border-radius: 8px;
+      background: transparent; color: var(--text); font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .cta-secondary:hover { border-color: rgba(255,255,255,0.2); text-decoration: none; }
+
+    section { margin-top: 56px; }
+    h2 {
+      font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+      margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    h3 { font-size: 15px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; }
+    p { margin-bottom: 14px; }
+    ul { padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 6px; }
+
+    .video-wrap {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .video-wrap video { width: 100%; display: block; }
+    .caption { color: var(--text-muted); font-size: 13px; margin-top: 8px; text-align: center; }
+
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 16px; overflow-x: auto;
+      font: 13px/1.55 ui-monospace, Menlo, Consolas, monospace;
+      color: #c7c3d8;
+    }
+    code { font: 13px/1.55 ui-monospace, Menlo, Consolas, monospace; color: #d8b4ff; }
+    p code, li code { background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+    .steps { counter-reset: step; list-style: none; padding: 0; }
+    .steps li {
+      counter-increment: step;
+      position: relative; padding-left: 40px; margin-bottom: 14px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: 0;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent-soft); border: 1px solid var(--accent);
+      color: var(--accent); font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    footer {
+      margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border);
+      color: var(--text-muted); font-size: 13px;
+    }
+    footer a { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<main>
+
+  <header>
+    <div class="badges">
+      <span class="badge">Node 18+</span>
+      <span class="badge">MIT</span>
+      <span class="badge">v0.1.0</span>
+    </div>
+    <h1>claude&#8209;design&#8209;export</h1>
+    <p class="tagline">
+      Convert <a href="https://www.anthropic.com/" rel="noopener">Claude Design</a>
+      HTML animations to high-quality MP4 video. Open source, one command, zero system dependencies.
+    </p>
+    <p>
+      <a href="#install" class="cta">Install</a>
+      <a href="https://github.com/Lolarz20/claudetovideo" class="cta-secondary" rel="noopener">View on GitHub</a>
+    </p>
+  </header>
+
+  <section aria-label="Demo">
+    <div class="video-wrap">
+      <video src="codaro-hq.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Demo: Claude Design HTML exported to MP4"></video>
+    </div>
+    <p class="caption">Demo: a 15-second Claude Design film, exported at 1080p60 with 2× supersampling.</p>
+  </section>
+
+  <section id="why">
+    <h2>Why</h2>
+    <p>
+      Claude Design generates polished animated HTML "micro-films", but there's no built-in way to
+      save them as video. This tool does that — deterministically and at high quality.
+    </p>
+    <ul>
+      <li><strong>Frame-accurate.</strong> Drives the internal timeline directly instead of recording wall-clock playback.</li>
+      <li><strong>High quality.</strong> 2× supersampling by default; BT.709 color; CRF 15 near-lossless H.264.</li>
+      <li><strong>Zero setup.</strong> <code>npm install</code> bundles Chromium and ffmpeg. Nothing else required.</li>
+      <li><strong>No bundle edits.</strong> Injection is browser-side only; the HTML file is never modified.</li>
+    </ul>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+<pre><code>git clone https://github.com/Lolarz20/claudetovideo.git
+cd claudetovideo
+npm install</code></pre>
+  </section>
+
+  <section id="usage">
+    <h2>Usage</h2>
+<pre><code>node bin/cli.js film.html
+# → film.mp4</code></pre>
+    <p>Defaults are tuned for highest quality: 60 fps, 2× supersampling, CRF 15, libx264 <code>slow</code> preset.</p>
+
+    <h3>Quick preview (≈ 3× faster)</h3>
+<pre><code>node bin/cli.js film.html --fast</code></pre>
+
+    <h3>Archival lossless master</h3>
+<pre><code>node bin/cli.js film.html --crf 0 --ss 2 --preset veryslow</code></pre>
+
+    <h3>All options</h3>
+<pre><code>-o, --output &lt;path&gt;    Output MP4 path (default: &lt;input&gt;.mp4)
+--fps &lt;n&gt;              Frame rate (default: 60)
+--ss &lt;n&gt;               Supersample factor (default: 2, 1 disables)
+--crf &lt;n&gt;              libx264 CRF, 0=lossless .. 51 (default 15)
+--preset &lt;name&gt;        ultrafast .. veryslow (default slow)
+--fast                 Shortcut: --ss 1 --crf 20 --preset medium
+--headed               Show browser window (debug)
+--verbose              Stream ffmpeg logs</code></pre>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p>
+      Claude Design bundles React plus a custom <code>Stage</code> component that owns a timeline in
+      React state (<code>{ time, duration, playing, setTime, setPlaying }</code>). <code>setTime</code>
+      is stable across renders but lives inside a closure, so it isn't reachable from outside.
+    </p>
+    <ol class="steps">
+      <li>Load the HTML in headless Chromium via Playwright at <code>deviceScaleFactor = supersample</code>.</li>
+      <li>Before any page script runs, define a getter/setter on <code>window.React</code> that traps
+        the moment the UMD factory populates <code>React.createElement</code>. Every element call is
+        sniffed — when props match the <code>TimelineContext</code> value shape, <code>setTime</code>
+        and <code>setPlaying</code> are stashed on <code>window.__stage</code>.</li>
+      <li>Read Stage dimensions off the Stage component's own props the same way.</li>
+      <li>Resize the viewport so Stage's auto-fit scale is exactly 1:1.</li>
+      <li>Freeze CSS animations (<code>animation-play-state: paused</code>) so non-timeline animations
+        stay deterministic.</li>
+      <li>For each frame: <code>setTime(i / fps)</code>, wait two <code>requestAnimationFrame</code>s
+        for React to commit + paint, screenshot clipped to the stage.</li>
+      <li>With supersample &gt; 1, ffmpeg downsamples PNGs with Lanczos before encoding — classic SSAA
+        for crisp fonts and thin lines.</li>
+      <li>Pipe PNGs through <code>libx264</code> with CRF 15, BT.709 color metadata, and
+        <code>+faststart</code>.</li>
+    </ol>
+  </section>
+
+  <section id="limits">
+    <h2>Limitations</h2>
+    <ul>
+      <li>Only works with Claude Design's <code>__bundler/*</code> HTML format (as of 2026-04).</li>
+      <li>Only films that use the <code>Stage</code> / <code>TimelineContext</code> timeline component.</li>
+      <li>No audio export — Claude Design doesn't produce audio today.</li>
+      <li>Output is MP4 (H.264) only. WebM / GIF / PNG sequence planned.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>
+      MIT licensed. Built with Playwright and ffmpeg-static.
+      <a href="https://github.com/Lolarz20/claudetovideo" rel="noopener">GitHub</a>.
+    </p>
+  </footer>
+
+</main>
+
+</body>
+</html>
