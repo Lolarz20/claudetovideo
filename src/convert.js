@@ -13,6 +13,8 @@ async function convert({
   preset = 'slow',
   headed = false,
   verbose = false,
+  onProgress = null,
+  silent = false,
 }) {
   if (!fs.existsSync(inputPath)) {
     throw new Error(`Input file not found: ${inputPath}`);
@@ -20,7 +22,9 @@ async function convert({
   const absIn = path.resolve(inputPath);
   const absOut = path.resolve(outputPath);
 
-  const log = {
+  const log = silent ? {
+    info: () => {}, warn: () => {}, debug: () => {},
+  } : {
     info: (m) => console.log(m),
     warn: (m) => console.warn(m),
     debug: verbose ? (m) => console.log(m) : () => {},
@@ -51,10 +55,13 @@ async function convert({
       const buf = await capture.renderFrame(t);
       await encoder.write(buf);
 
+      const elapsed = (Date.now() - t0) / 1000;
+      const eta = elapsed / (i + 1) * (totalFrames - i - 1);
+      if (onProgress) {
+        try { onProgress({ frame: i + 1, total: totalFrames, elapsed, eta }); } catch {}
+      }
       if (i % progressEvery === 0 || i === totalFrames - 1) {
         const pct = ((i + 1) / totalFrames * 100).toFixed(1);
-        const elapsed = (Date.now() - t0) / 1000;
-        const eta = elapsed / (i + 1) * (totalFrames - i - 1);
         log.info(`  frame ${i + 1}/${totalFrames} (${pct}%) — ${elapsed.toFixed(1)}s elapsed, ~${eta.toFixed(1)}s remaining`);
       }
     }

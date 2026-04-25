@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>claudetovideo — Claude Design HTML to MP4</title>
+  <meta name="description" content="Upload a Claude Design HTML animation and get back an MP4 video.">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-elev: #13131a;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.16);
+      --text: #e8e6f0;
+      --text-muted: #8a8797;
+      --text-dim: #56546a;
+      --accent: #7d45b5;
+      --accent-soft: rgba(125,69,181,0.08);
+      --accent-border: rgba(125,69,181,0.4);
+      --ok: #5ab48d;
+      --err: #e87d7d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* Ambient gradient — matches Claude Design aesthetic */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background: radial-gradient(60% 50% at 50% 50%, rgba(125,69,181,0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    main {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      position: relative;
+    }
+
+    .dropzone {
+      width: 100%;
+      max-width: 720px;
+      padding: 100px 48px;
+      border: 2px dashed var(--accent-border);
+      border-radius: 20px;
+      background: var(--accent-soft);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+    }
+    .dropzone:hover {
+      border-color: var(--accent);
+      background: rgba(125,69,181,0.12);
+    }
+    .dropzone.drag {
+      border-color: var(--accent);
+      background: rgba(125,69,181,0.18);
+      transform: scale(1.01);
+    }
+
+    .brand {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+    .dropzone h1 {
+      font-size: 28px; font-weight: 600; letter-spacing: -0.02em;
+      line-height: 1.25; margin-bottom: 10px;
+    }
+    .dropzone p {
+      color: var(--text-muted); margin-bottom: 32px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px;
+      background: var(--accent);
+      color: white;
+      border: 0; border-radius: 10px;
+      font: inherit; font-weight: 600; font-size: 14px;
+      cursor: pointer;
+      transition: background 180ms ease;
+    }
+    .btn:hover { background: #8e56c7; }
+    .btn:focus-visible { outline: 2px solid #fff4; outline-offset: 2px; }
+
+    .hint {
+      margin-top: 24px; font-size: 12px; color: var(--text-dim);
+    }
+
+    input[type="file"] { display: none; }
+
+    /* ── Queue widget ───────────────────────────────────────── */
+    .queue {
+      position: fixed; bottom: 20px; right: 20px;
+      width: 320px; max-height: 70vh;
+      display: flex; flex-direction: column; gap: 8px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    .queue:empty { display: none; }
+    .queue::-webkit-scrollbar { width: 4px; }
+    .queue::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .job {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      animation: slide-in 220ms cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateX(12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .job-top {
+      display: flex; align-items: baseline; gap: 8px;
+      margin-bottom: 6px;
+    }
+    .job-name {
+      flex: 1;
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .job-status {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .job.done .job-status { color: var(--ok); }
+    .job.error .job-status { color: var(--err); }
+
+    .bar {
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px; overflow: hidden;
+      margin-top: 8px;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 180ms ease;
+    }
+    .job.done .bar-fill { background: var(--ok); }
+    .job.error .bar-fill { background: var(--err); }
+
+    .job-footer {
+      margin-top: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px;
+    }
+    .job-download {
+      color: var(--accent); text-decoration: none; font-weight: 600;
+    }
+    .job-download:hover { text-decoration: underline; }
+    .job-error {
+      color: var(--err); font-size: 11px; margin-top: 6px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+<main>
+  <label class="dropzone" id="drop">
+    <div class="brand">claudetovideo</div>
+    <h1>Drop Claude Design HTML</h1>
+    <p>or click to choose a file — we'll render it to MP4</p>
+    <span class="btn" id="browse-hint">Choose file</span>
+    <div class="hint">.html files only · up to 20 MB</div>
+    <input type="file" id="file" accept=".html,text/html">
+  </label>
+</main>
+
+<div class="queue" id="queue" aria-live="polite"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

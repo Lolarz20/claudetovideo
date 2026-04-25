@@ -7,10 +7,13 @@
   },
   "scripts": {
     "postinstall": "playwright install chromium",
-    "convert": "node bin/cli.js"
+    "convert": "node bin/cli.js",
+    "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.21.0",
     "ffmpeg-static": "^5.2.0",
+    "multer": "^2.1.1",
     "playwright": "^1.48.0"
   },
   "engines": {

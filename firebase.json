@@ -1,0 +1,43 @@
+{
+  "hosting": {
+    "public": "public",
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "claudetovideo",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/healthz",
+        "run": {
+          "serviceId": "claudetovideo",
+          "region": "us-central1"
+        }
+      }
+    ],
+    "headers": [
+      {
+        "source": "/api/events",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-transform" },
+          { "key": "X-Accel-Buffering", "value": "no" }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=3600" }
+        ]
+      }
+    ]
+  }
+}
