@@ -3,6 +3,7 @@ const path = require('path');
 const { chromium } = require('playwright');
 const { startCapture } = require('./capture.js');
 const { openEncoder } = require('./encode.js');
+const { DurationLimitError } = require('./errors.js');
 
 async function convert({
   inputPath,
@@ -15,6 +16,9 @@ async function convert({
   verbose = false,
   onProgress = null,
   silent = false,
+  maxDuration = 60,
+  maxFrames = 7200,
+  frameTimeout = 15000,
 }) {
   if (!fs.existsSync(inputPath)) {
     throw new Error(`Input file not found: ${inputPath}`);
@@ -39,10 +43,30 @@ async function convert({
 
   let capture, encoder;
   try {
-    capture = await startCapture({ inputPath: absIn, browser, log, supersample });
+    capture = await startCapture({ inputPath: absIn, browser, log, supersample, frameTimeout });
 
     const { width, height, duration } = capture.dims;
+
+    // Reject hostile / unintended long renders before we sink ffmpeg time.
+    if (duration > maxDuration) {
+      throw new DurationLimitError(
+        `Stage duration ${duration.toFixed(1)}s exceeds --max-duration (${maxDuration}s). ` +
+          `Pass --max-duration ${Math.ceil(duration) + 1} to allow.`,
+        duration,
+        maxDuration,
+      );
+    }
+
     const totalFrames = Math.round(duration * fps);
+    if (totalFrames > maxFrames) {
+      throw new DurationLimitError(
+        `Total frames ${totalFrames} (duration ${duration}s × fps ${fps}) exceeds --max-frames (${maxFrames}). ` +
+          `Pass --max-frames ${totalFrames + 1} to allow, or lower --fps.`,
+        totalFrames,
+        maxFrames,
+      );
+    }
+
     // With supersample>1 the PNG from Playwright comes back at physical
     // pixels (width × supersample). ffmpeg downsamples to the logical Stage
     // size with Lanczos for anti-aliased output. supersample=1 skips scale.
@@ -58,7 +82,7 @@ async function convert({
 
     for (let i = 0; i < totalFrames; i++) {
       const t = i / fps;
-      const buf = await capture.renderFrame(t);
+      const buf = await capture.renderFrame(t, i);
       await encoder.write(buf);
 
       const elapsed = (Date.now() - t0) / 1000;
