@@ -15,37 +15,85 @@
 //   (a) width + height + duration numeric props → Stage component
 //   (b) props.value with the TimelineContext shape → TimelineContext.Provider
 // and stash handles to window.__stageProps / window.__stage respectively.
+//
+// The Stage-detection heuristic mirrors src/sniff.js (which is what tests
+// drive). We inline it here because addInitScript only takes a string —
+// keep the two in sync if you change either.
+
+const { MIN_DIM, MAX_DIM } = require('./sniff.js');
 
 module.exports = `
 (function () {
   if (window.__stageHooked) return;
   window.__stageHooked = true;
-  window.__stageDebug = { sniffCalls: 0, patchedAt: null, reactSetAt: null };
+  window.__stageDebug = {
+    sniffCalls: 0,
+    patchedAt: null,
+    reactSetAt: null,
+    stageCandidates: 0,
+    stagePropsHasName: false,
+  };
+
+  var MIN_DIM = ${MIN_DIM};
+  var MAX_DIM = ${MAX_DIM};
+
+  function isStageProps(props) {
+    return (
+      typeof props.width === 'number' &&
+      typeof props.height === 'number' &&
+      typeof props.duration === 'number' &&
+      props.width >= MIN_DIM &&
+      props.height >= MIN_DIM &&
+      props.width <= MAX_DIM &&
+      props.height <= MAX_DIM &&
+      props.duration > 0
+    );
+  }
+
+  function isTimelineValue(v) {
+    return (
+      v && typeof v === 'object' &&
+      typeof v.setTime === 'function' &&
+      typeof v.setPlaying === 'function' &&
+      'time' in v && 'duration' in v && 'playing' in v
+    );
+  }
+
+  function typeNameContainsStage(type) {
+    if (!type) return false;
+    if (typeof type === 'string') return /stage/i.test(type);
+    if (typeof type === 'function' || typeof type === 'object') {
+      var name = type.displayName || type.name;
+      return typeof name === 'string' && /stage/i.test(name);
+    }
+    return false;
+  }
 
   function sniff(type, props) {
     window.__stageDebug.sniffCalls++;
     if (!props || typeof props !== 'object') return;
 
-    if (
-      typeof props.width === 'number' &&
-      typeof props.height === 'number' &&
-      typeof props.duration === 'number'
-    ) {
-      window.__stageProps = {
-        width: props.width,
-        height: props.height,
-        duration: props.duration,
-        fps: typeof props.fps === 'number' ? props.fps : 60,
-      };
+    if (isStageProps(props)) {
+      var hasName = typeNameContainsStage(type);
+      var current = window.__stageProps;
+      var currentHasName = window.__stageDebug.stagePropsHasName;
+      // Replace candidate if (a) we have nothing yet, (b) new candidate has
+      // a Stage-y type name and current doesn't, or (c) neither has a name
+      // (last-seen wins — Stage usually mounts last as the root).
+      if (!current || (hasName && !currentHasName) || !currentHasName) {
+        window.__stageProps = {
+          width: props.width,
+          height: props.height,
+          duration: props.duration,
+          fps: typeof props.fps === 'number' ? props.fps : 60,
+        };
+        window.__stageDebug.stagePropsHasName = hasName;
+        window.__stageDebug.stageCandidates++;
+      }
     }
 
-    var v = props.value;
-    if (
-      v && typeof v === 'object' &&
-      typeof v.setTime === 'function' &&
-      typeof v.setPlaying === 'function' &&
-      'time' in v && 'duration' in v && 'playing' in v
-    ) {
+    if (isTimelineValue(props.value)) {
+      var v = props.value;
       window.__stage = {
         setTime: v.setTime,
         setPlaying: v.setPlaying,
