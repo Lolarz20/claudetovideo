@@ -42,15 +42,7 @@ test(
     const meta = JSON.parse(
       execFileSync(
         ffprobe.path,
-        [
-          '-v',
-          'error',
-          '-print_format',
-          'json',
-          '-show_streams',
-          '-count_frames',
-          out,
-        ],
+        ['-v', 'error', '-print_format', 'json', '-show_streams', '-count_frames', out],
         { encoding: 'utf8' },
       ),
     );
