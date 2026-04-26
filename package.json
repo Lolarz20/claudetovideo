@@ -30,7 +30,7 @@
     "playwright": "^1.48.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "license": "MIT",
   "author": "Lolarz20",
@@ -39,7 +39,10 @@
     "claude-design",
     "anthropic",
     "html-to-video",
+    "html-to-mp4",
     "mp4",
+    "video-export",
+    "ai-video",
     "ffmpeg",
     "playwright",
     "animation",
