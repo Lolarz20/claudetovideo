@@ -7,9 +7,17 @@ const queue = document.getElementById('queue');
 const jobs = new Map();
 
 function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[c]));
+  return String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[c],
+  );
 }
 
 function renderQueue() {
@@ -26,10 +34,15 @@ function renderJob(j) {
 
   const pct = Math.round((j.progress || 0) * 100);
   const statusLabel =
-    j.status === 'done' ? 'Done' :
-    j.status === 'error' ? 'Error' :
-    j.status === 'processing' ? `${pct}%` :
-    j.status === 'queued' ? 'Queued' : j.status;
+    j.status === 'done'
+      ? 'Done'
+      : j.status === 'error'
+        ? 'Error'
+        : j.status === 'processing'
+          ? `${pct}%`
+          : j.status === 'queued'
+            ? 'Queued'
+            : j.status;
 
   el.innerHTML = `
     <div class="job-top">
@@ -37,18 +50,21 @@ function renderJob(j) {
       <div class="job-status">${esc(statusLabel)}</div>
     </div>
     <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
-    ${j.status === 'done' ? `
+    ${
+      j.status === 'done'
+        ? `
       <div class="job-footer">
         <a class="job-download" href="/api/download/${j.id}" download>Download MP4 ↓</a>
       </div>
-    ` : ''}
+    `
+        : ''
+    }
     ${j.status === 'error' ? `<div class="job-error">${esc(j.error || 'Unknown error')}</div>` : ''}
   `;
   return el;
 }
 
 // ── File selection & upload ─────────────────────────────────────
-function openFilePicker() { fileInput.click(); }
 
 drop.addEventListener('click', (e) => {
   // label + hidden input already opens the picker on click; guard against
@@ -88,8 +104,11 @@ async function uploadFile(file) {
   // Optimistic row — before the server responds we already show "Uploading…"
   const tmpId = 'tmp-' + Math.random().toString(36).slice(2, 10);
   jobs.set(tmpId, {
-    id: tmpId, filename: file.name, status: 'queued',
-    progress: 0, createdAt: Date.now(),
+    id: tmpId,
+    filename: file.name,
+    status: 'queued',
+    progress: 0,
+    createdAt: Date.now(),
   });
   renderQueue();
 
@@ -104,8 +123,12 @@ async function uploadFile(file) {
     // Real job record will arrive via SSE; if it raced ahead it's already there.
   } catch (err) {
     jobs.set(tmpId, {
-      id: tmpId, filename: file.name, status: 'error',
-      progress: 0, error: err.message, createdAt: Date.now(),
+      id: tmpId,
+      filename: file.name,
+      status: 'error',
+      progress: 0,
+      error: err.message,
+      createdAt: Date.now(),
     });
     renderQueue();
   }

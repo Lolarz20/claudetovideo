@@ -67,7 +67,7 @@ Stage's closure, so it isn't accessible from outside.
 The exporter:
 
 1. Loads the HTML in headless Chromium via Playwright at `deviceScaleFactor
-   = supersample` (default 2).
+= supersample` (default 2).
 2. **Before** any page script runs, installs a getter/setter on
    `window.React` that intercepts `React.createElement` the moment the UMD
    factory populates it. Every element call is sniffed — when a props bag

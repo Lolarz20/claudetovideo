@@ -27,31 +27,33 @@ async function startCapture({ inputPath, browser, log, supersample = 2 }) {
 
   log.info('Waiting for Stage to mount…');
   try {
-    await page.waitForFunction(
-      () => window.__stage && window.__stageProps,
-      null,
-      { timeout: 60000 },
-    );
-  } catch (err) {
-    const diag = await page.evaluate(() => ({
-      hasReact: !!window.React,
-      reactVersion: window.React && window.React.version,
-      hasStage: !!window.__stage,
-      hasStageProps: !!window.__stageProps,
-      hooked: !!window.__stageHooked,
-      debug: window.__stageDebug,
-      rootHtmlLen: (document.getElementById('root') || { innerHTML: '' }).innerHTML.length,
-      hasReactDOM: !!window.ReactDOM,
-      hasBabel: !!window.Babel,
-      bodyChildren: document.body ? document.body.children.length : -1,
-      errElem: !!document.getElementById('__bundler_err'),
-    })).catch((e) => ({ evalErr: e.message }));
+    await page.waitForFunction(() => window.__stage && window.__stageProps, null, {
+      timeout: 60000,
+    });
+  } catch (_err) {
+    const diag = await page
+      .evaluate(() => ({
+        hasReact: !!window.React,
+        reactVersion: window.React && window.React.version,
+        hasStage: !!window.__stage,
+        hasStageProps: !!window.__stageProps,
+        hooked: !!window.__stageHooked,
+        debug: window.__stageDebug,
+        rootHtmlLen: (document.getElementById('root') || { innerHTML: '' }).innerHTML.length,
+        hasReactDOM: !!window.ReactDOM,
+        hasBabel: !!window.Babel,
+        bodyChildren: document.body ? document.body.children.length : -1,
+        errElem: !!document.getElementById('__bundler_err'),
+      }))
+      .catch((e) => ({ evalErr: e.message }));
     await context.close();
     throw new Error(`Stage did not mount within 60s. Diagnostics: ${JSON.stringify(diag)}`);
   }
 
   const dims = await page.evaluate(() => window.__stageProps);
-  log.info(`Stage: ${dims.width}×${dims.height}, duration=${dims.duration}s, supersample=${supersample}×`);
+  log.info(
+    `Stage: ${dims.width}×${dims.height}, duration=${dims.duration}s, supersample=${supersample}×`,
+  );
 
   const BAR_H = 44;
   await page.setViewportSize({ width: dims.width, height: dims.height + BAR_H });
@@ -69,17 +71,24 @@ async function startCapture({ inputPath, browser, log, supersample = 2 }) {
       window.__stage.setPlaying(false);
       window.__stage.setTime(t);
     }, t);
-    await page.evaluate(() => new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        if (document.fonts && document.fonts.ready) {
-          document.fonts.ready.then(resolve, resolve);
-        } else resolve();
-      }));
-    }));
+    await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(resolve, resolve);
+              } else resolve();
+            }),
+          );
+        }),
+    );
     return page.screenshot({ type: 'png', clip, animations: 'disabled' });
   }
 
-  async function close() { await context.close(); }
+  async function close() {
+    await context.close();
+  }
 
   return { dims, renderFrame, close };
 }

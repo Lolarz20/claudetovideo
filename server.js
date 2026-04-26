@@ -50,7 +50,9 @@ const sseClients = new Set();
 function broadcast(payload) {
   const msg = `data: ${JSON.stringify(payload)}\n\n`;
   for (const res of sseClients) {
-    try { res.write(msg); } catch {}
+    try {
+      res.write(msg);
+    } catch {}
   }
 }
 function emitJob(job) {
@@ -96,7 +98,9 @@ async function processQueue() {
     console.error(`[job ${job.id}] ${err.stack || err.message}`);
   } finally {
     // Remove the uploaded source; keep the output so the user can download.
-    try { fs.unlinkSync(job.inputPath); } catch {}
+    try {
+      fs.unlinkSync(job.inputPath);
+    } catch {}
     activeJobId = null;
     emitJob(job);
     processQueue();
@@ -160,11 +164,20 @@ app.get('/api/events', (req, res) => {
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
   });
-  res.write(`data: ${JSON.stringify({ type: 'snapshot', jobs: [...jobs.values()].map(publicJob) })}\n\n`);
+  res.write(
+    `data: ${JSON.stringify({ type: 'snapshot', jobs: [...jobs.values()].map(publicJob) })}\n\n`,
+  );
   sseClients.add(res);
   // Keepalive ping every 15s — proxies often kill idle connections.
-  const ping = setInterval(() => { try { res.write(': ping\n\n'); } catch {} }, 15000);
-  req.on('close', () => { clearInterval(ping); sseClients.delete(res); });
+  const ping = setInterval(() => {
+    try {
+      res.write(': ping\n\n');
+    } catch {}
+  }, 15000);
+  req.on('close', () => {
+    clearInterval(ping);
+    sseClients.delete(res);
+  });
 });
 
 app.get('/api/download/:id', (req, res) => {

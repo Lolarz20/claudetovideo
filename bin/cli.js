@@ -45,22 +45,37 @@ function parseArgs(argv) {
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '-h' || a === '--help') { args.help = true; }
-    else if (a === '-o' || a === '--output') { args.output = argv[++i]; }
-    else if (a === '--fps') { args.fps = parseInt(argv[++i], 10); }
-    else if (a === '--ss' || a === '--supersample') { args.supersample = parseInt(argv[++i], 10); }
-    else if (a === '--crf') { args.crf = parseInt(argv[++i], 10); }
-    else if (a === '--preset') { args.preset = argv[++i]; }
-    else if (a === '--fast') { args.supersample = 1; args.crf = 20; args.preset = 'medium'; }
-    else if (a === '--headed') { args.headed = true; }
-    else if (a === '--verbose') { args.verbose = true; }
-    else if (a.startsWith('-')) { throw new Error(`Unknown option: ${a}`); }
-    else { rest.push(a); }
+    if (a === '-h' || a === '--help') {
+      args.help = true;
+    } else if (a === '-o' || a === '--output') {
+      args.output = argv[++i];
+    } else if (a === '--fps') {
+      args.fps = parseInt(argv[++i], 10);
+    } else if (a === '--ss' || a === '--supersample') {
+      args.supersample = parseInt(argv[++i], 10);
+    } else if (a === '--crf') {
+      args.crf = parseInt(argv[++i], 10);
+    } else if (a === '--preset') {
+      args.preset = argv[++i];
+    } else if (a === '--fast') {
+      args.supersample = 1;
+      args.crf = 20;
+      args.preset = 'medium';
+    } else if (a === '--headed') {
+      args.headed = true;
+    } else if (a === '--verbose') {
+      args.verbose = true;
+    } else if (a.startsWith('-')) {
+      throw new Error(`Unknown option: ${a}`);
+    } else {
+      rest.push(a);
+    }
   }
   if (args.help) return args;
   if (rest.length !== 1) throw new Error('Expected exactly one input file. Pass --help for usage.');
   args.input = rest[0];
-  if (!Number.isFinite(args.fps) || args.fps <= 0) throw new Error('--fps must be a positive number');
+  if (!Number.isFinite(args.fps) || args.fps <= 0)
+    throw new Error('--fps must be a positive number');
   if (!Number.isFinite(args.supersample) || args.supersample < 1 || args.supersample > 4) {
     throw new Error('--ss must be 1, 2, 3, or 4');
   }
@@ -82,7 +97,10 @@ function parseArgs(argv) {
     console.error(`Error: ${err.message}`);
     process.exit(2);
   }
-  if (args.help) { printUsage(); process.exit(0); }
+  if (args.help) {
+    printUsage();
+    process.exit(0);
+  }
 
   try {
     await convert({

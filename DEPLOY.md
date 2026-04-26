@@ -132,13 +132,13 @@ Then open the site in a browser and drop your HTML in.
 
 ## Costs worth knowing
 
-| Resource | Free tier | After |
-|---|---|---|
-| Cloud Run CPU | 180k vCPU-sec / month | $0.000024 / vCPU-sec |
-| Cloud Run memory | 360k GiB-sec / month | $0.0000025 / GiB-sec |
-| Cloud Run requests | 2M / month | $0.40 / M |
-| Hosting bandwidth | 10 GB / month | $0.15 / GB |
-| Container Registry storage | 0.5 GB | $0.10 / GB / month |
+| Resource                   | Free tier             | After                |
+| -------------------------- | --------------------- | -------------------- |
+| Cloud Run CPU              | 180k vCPU-sec / month | $0.000024 / vCPU-sec |
+| Cloud Run memory           | 360k GiB-sec / month  | $0.0000025 / GiB-sec |
+| Cloud Run requests         | 2M / month            | $0.40 / M            |
+| Hosting bandwidth          | 10 GB / month         | $0.15 / GB           |
+| Container Registry storage | 0.5 GB                | $0.10 / GB / month   |
 
 One 15s render uses ~90s × 2 vCPU × 2 GiB = 180 vCPU-sec + 360 GiB-sec.
 That's ~1000 free renders per month. Beyond that it's roughly **$0.004
