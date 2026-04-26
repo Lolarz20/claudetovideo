@@ -3,6 +3,7 @@ node_modules/
 !codaro-hq.mp4
 *.webm
 *.gif
+!assets/hero.gif
 *.jpg
 .DS_Store
 .claude/
