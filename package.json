@@ -5,6 +5,13 @@
   "bin": {
     "claudetovideo": "bin/cli.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "postinstall": "playwright install chromium",
     "convert": "node bin/cli.js",
