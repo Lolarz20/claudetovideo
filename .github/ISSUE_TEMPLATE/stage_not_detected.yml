@@ -1,0 +1,53 @@
+name: Stage detection failed
+description: claudetovideo couldn't find Claude Design's Stage in your HTML
+title: '[bug] Stage not detected: '
+labels: ['bug', 'area:stage-detection', 'needs-triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Stage detection is the most fragile part of claudetovideo — it depends on
+        Claude Design's bundle structure, which changes over time. This template
+        gathers the diagnostic info we need to fix it fast.
+  - type: input
+    id: file-source
+    attributes:
+      label: Where did the HTML come from?
+      description: Approximate date and source (Claude Design web, Claude API, exported by you, etc.)
+      placeholder: 'Claude Design web, exported 2026-04-15'
+    validations:
+      required: true
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Full --verbose output
+      description: 'Run `claudetovideo your-file.html out.mp4 --headed --verbose` and paste everything here.'
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: claudetovideo version
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [macOS, Linux, Windows, Other]
+    validations:
+      required: true
+  - type: checkboxes
+    id: html-attached
+    attributes:
+      label: HTML file
+      description: We can almost always reproduce from the file. If you can't share it, we can still try to help with the diagnostics above.
+      options:
+        - label: I attached the HTML file
+        - label: I can't share the file but I'll respond to debug questions
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Console errors, unusual fonts/CDNs, anything that might be relevant.

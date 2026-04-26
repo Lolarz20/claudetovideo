@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest a new capability
+title: '[feat] '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: What feature do you want? One paragraph is enough.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What problem does this solve for you? A concrete use case beats abstract reasoning.
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: How would you use it?
+      description: Sketch the CLI flag, API call, or config — whatever shape this takes from a user's perspective.
+    validations:
+      required: false
+  - type: input
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: 'How are you solving this today? "Not solving it" is a valid answer.'
