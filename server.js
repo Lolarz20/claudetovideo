@@ -212,10 +212,15 @@ app.get('/api/jobs', (_req, res) => {
 app.get('/api/events', (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-transform',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
   });
+  // Force the response headers + a 2KB padding comment out of any upstream
+  // buffer (Cloud Run, Firebase Hosting CDN, browsers all sometimes wait
+  // for ~2KB before exposing a streaming response to the consumer).
+  res.flushHeaders();
+  res.write(`: ${' '.repeat(2048)}\n\n`);
   res.write(
     `data: ${JSON.stringify({ type: 'snapshot', jobs: [...jobs.values()].map(publicJob) })}\n\n`,
   );
