@@ -19,6 +19,9 @@ async function convert({
   maxDuration = 60,
   maxFrames = 7200,
   frameTimeout = 15000,
+  vtimeDuration = null,
+  vtimeWidth = null,
+  vtimeHeight = null,
 }) {
   if (!fs.existsSync(inputPath)) {
     throw new Error(`Input file not found: ${inputPath}`);
@@ -50,7 +53,16 @@ async function convert({
 
   let capture, encoder;
   try {
-    capture = await startCapture({ inputPath: absIn, browser, log, supersample, frameTimeout });
+    capture = await startCapture({
+      inputPath: absIn,
+      browser,
+      log,
+      supersample,
+      frameTimeout,
+      vtimeDuration,
+      vtimeWidth,
+      vtimeHeight,
+    });
 
     const { width, height, duration } = capture.dims;
 

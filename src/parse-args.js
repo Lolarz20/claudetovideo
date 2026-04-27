@@ -51,6 +51,12 @@ function parseArgs(argv) {
       args.maxFrames = parseInt(argv[++i], 10);
     } else if (a === '--frame-timeout') {
       args.frameTimeout = parseInt(argv[++i], 10);
+    } else if (a === '--vtime-duration') {
+      args.vtimeDuration = parseFloat(argv[++i]);
+    } else if (a === '--vtime-width') {
+      args.vtimeWidth = parseInt(argv[++i], 10);
+    } else if (a === '--vtime-height') {
+      args.vtimeHeight = parseInt(argv[++i], 10);
     } else if (a === '--fast') {
       args.supersample = 1;
       args.crf = 20;
@@ -98,6 +104,18 @@ function parseArgs(argv) {
   }
   if (!Number.isFinite(args.frameTimeout) || args.frameTimeout < 100) {
     throw new Error('--frame-timeout must be at least 100 (ms)');
+  }
+  if (
+    args.vtimeDuration != null &&
+    (!Number.isFinite(args.vtimeDuration) || args.vtimeDuration <= 0)
+  ) {
+    throw new Error('--vtime-duration must be a positive number');
+  }
+  if (args.vtimeWidth != null && (!Number.isInteger(args.vtimeWidth) || args.vtimeWidth < 16)) {
+    throw new Error('--vtime-width must be an integer ≥ 16');
+  }
+  if (args.vtimeHeight != null && (!Number.isInteger(args.vtimeHeight) || args.vtimeHeight < 16)) {
+    throw new Error('--vtime-height must be an integer ≥ 16');
   }
 
   if (!args.output) {

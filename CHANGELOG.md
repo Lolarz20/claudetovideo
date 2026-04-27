@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-27
+
+### Added
+
+- Virtual-time capture fallback (`src/capture-vtime.js`) for Claude Design HTML that ships as vanilla `requestAnimationFrame` animations instead of React/Stage. Triggers automatically when no Stage component mounts within 8 s.
+- Static metadata sniffer reads `DURATION` and stage dimensions from gzipped bundler manifests or plain inline scripts.
+- CLI flags: `--vtime-duration`, `--vtime-width`, `--vtime-height` to override sniffed values.
+- Smoke test (`test/smoke-vtime.test.js`) + fixture (`test/fixtures/minimal-vtime.html`) for the vtime path.
+
+### Changed
+
+- `src/capture.js` is now a dispatcher; the existing Stage capture moved to `src/capture-stage.js` with an 8 s mount timeout (was 60 s) so falling through to vtime feels responsive.
+- README and landing page updated to document both strategies.
+
 ## [0.1.0] - 2026-04-26
 
 ### Added

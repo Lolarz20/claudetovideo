@@ -23,6 +23,10 @@ Options:
                          Safety limit; raise if you trust the input.
   --max-frames <n>       Reject if duration*fps would exceed N (default: 7200).
   --frame-timeout <ms>   Per-frame render timeout (default: 15000).
+  --vtime-duration <s>   Override duration when virtual-time fallback is
+                         used and DURATION can't be sniffed from the bundle.
+  --vtime-width <px>     Override viewport width in vtime mode.
+  --vtime-height <px>    Override viewport height in vtime mode.
   --fast                 Shortcut: --ss 1 --crf 20 --preset medium.
                          About 3× faster, slightly lower quality.
   --headed               Show browser window (debug)
@@ -63,6 +67,9 @@ Examples:
       maxDuration: args.maxDuration,
       maxFrames: args.maxFrames,
       frameTimeout: args.frameTimeout,
+      vtimeDuration: args.vtimeDuration,
+      vtimeWidth: args.vtimeWidth,
+      vtimeHeight: args.vtimeHeight,
     });
   } catch (err) {
     console.error(`Error: ${err.message}`);

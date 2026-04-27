@@ -32,10 +32,10 @@ export default [
     },
   },
   {
-    // capture.js + inject.js contain page.evaluate callbacks that run in the
-    // browser context. They reference window/document/requestAnimationFrame
-    // even though the file itself runs in node.
-    files: ['src/capture.js', 'src/inject.js'],
+    // capture-*.js + inject.js contain page.evaluate / addInitScript content
+    // that runs in the browser. They reference window/document/rAF even
+    // though the source file itself executes in node.
+    files: ['src/capture.js', 'src/capture-stage.js', 'src/capture-vtime.js', 'src/inject.js'],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },

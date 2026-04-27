@@ -646,18 +646,20 @@
           <div class="cards">
             <div class="card">
               <div class="card-num">1</div>
-              <h3>Trap React</h3>
+              <h3>Two strategies, auto-detected</h3>
               <p>
-                Intercept <code>window.React</code> before Claude Design's UMD bundle runs. Sniff
-                every <code>createElement</code> for the timeline context shape.
+                React/Stage bundles: trap <code>window.React</code> and sniff every
+                <code>createElement</code> for the timeline context shape. Vanilla
+                <code>requestAnimationFrame</code> bundles: override
+                <code>performance.now</code> and <code>rAF</code> so time only advances when we say.
               </p>
             </div>
             <div class="card">
               <div class="card-num">2</div>
               <h3>Drive the timeline</h3>
               <p>
-                Once we have <code>setTime</code>, Playwright steps the animation frame by frame at
-                2× supersampling.
+                Once we control time — via <code>setTime</code> or virtual clock — Playwright steps
+                the animation frame by frame at 2× supersampling.
               </p>
             </div>
             <div class="card">

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Minimal Vtime Fixture</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #000;
+      }
+      #stage {
+        position: relative;
+        width: 640px;
+        height: 360px;
+        background: #0a0a0f;
+        overflow: hidden;
+      }
+      #blob {
+        position: absolute;
+        top: 50%;
+        width: 40px;
+        height: 40px;
+        margin-top: -20px;
+        background: #7d45b5;
+        border-radius: 8px;
+      }
+      #label {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        color: #e8e6f0;
+        font-family: monospace;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Vanilla rAF animation, no React. Used by smoke-vtime test to exercise
+      the virtual-time capture path. Bundle-style metadata sniff in
+      capture-vtime.js will pull DURATION + dimensions from this script.
+    -->
+    <div id="stage">
+      <div id="blob"></div>
+      <div id="label">t=0.00s</div>
+    </div>
+    <script>
+      const DURATION = 2;
+      const stage = document.getElementById('stage');
+      stage.style.width = '640px';
+      stage.style.height = '360px';
+      const blob = document.getElementById('blob');
+      const label = document.getElementById('label');
+      let startT = performance.now();
+      function loop() {
+        const t = ((performance.now() - startT) / 1000) % DURATION;
+        const x = (t / DURATION) * (640 - 40);
+        blob.style.left = x + 'px';
+        label.textContent = 't=' + t.toFixed(2) + 's';
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
