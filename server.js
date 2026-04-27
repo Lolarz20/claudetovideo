@@ -84,13 +84,14 @@ async function processQueue() {
   const outPath = path.join(DATA_DIR, `${job.id}.mp4`);
   let lastEmitAt = 0;
 
+  console.log(`[job ${job.id}] starting convert`);
   try {
     await convert({
       inputPath: job.inputPath,
       outputPath: outPath,
       ...SERVER_QUALITY,
       ...SERVER_LIMITS,
-      silent: true,
+      silent: false,
       onProgress: ({ frame, total }) => {
         job.progress = frame / total;
         // Throttle broadcasts to ~5Hz to keep the wire quiet.
@@ -101,6 +102,7 @@ async function processQueue() {
         }
       },
     });
+    console.log(`[job ${job.id}] convert returned ok`);
     job.output = outPath;
     job.status = 'done';
     job.progress = 1;
