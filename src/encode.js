@@ -54,6 +54,12 @@ function openEncoder({ outPath, fps, crf = 15, preset = 'slow', scaleTo = null, 
   ff.on('close', (code, signal) => {
     exitInfo = { code, signal };
   });
+  // Without this listener a spawn failure (ENOENT, EACCES) emits an
+  // unhandled 'error' event and kills the whole process.
+  ff.on('error', (err) => {
+    stderrBuf += `\nffmpeg spawn error: ${err.message}\n`;
+    if (!exitInfo) exitInfo = { code: -1, signal: null };
+  });
 
   // Suppress EPIPE writes when ffmpeg has exited unexpectedly — we surface
   // the error via end() / write() rejections instead.

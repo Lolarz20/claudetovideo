@@ -7,10 +7,13 @@ FROM mcr.microsoft.com/playwright:v1.59.1-jammy
 WORKDIR /app
 
 # Install JS dependencies first so Docker can cache this layer across
-# source-only changes. --ignore-scripts skips the postinstall that would
-# otherwise redownload Chromium (already in the base image).
+# source-only changes. PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 prevents the
+# Playwright postinstall from re-downloading Chromium (already in the base
+# image), but other postinstalls still run — ffmpeg-static needs its
+# postinstall to download the actual binary.
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --omit=dev
 
 # App source.
 COPY bin ./bin
