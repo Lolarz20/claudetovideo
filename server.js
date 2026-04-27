@@ -58,18 +58,34 @@ function publicJob(j) {
   };
 }
 
+// Session IDs are opaque UUIDs the client mints in localStorage and sends
+// with every request. They scope job visibility/download rights so other
+// visitors never see filenames or download URLs belonging to anyone else.
+// Requirement is purely structural — we don't authenticate the holder, we
+// just refuse to leak a job to a session that doesn't match the one that
+// uploaded it.
+const SID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isValidSid(s) {
+  return typeof s === 'string' && SID_RE.test(s);
+}
+function readSid(req) {
+  return (
+    req.get('x-session-id') || (typeof req.query.sid === 'string' ? req.query.sid : null) || null
+  );
+}
+
 // ── SSE broadcast ────────────────────────────────────────────────────────
+// Each client carries its sid alongside its res handle so emitJob can
+// fan out only to subscribers that match the job's owning session.
 const sseClients = new Set();
-function broadcast(payload) {
-  const msg = `data: ${JSON.stringify(payload)}\n\n`;
-  for (const res of sseClients) {
+function emitJob(job) {
+  const msg = `data: ${JSON.stringify({ type: 'job', job: publicJob(job) })}\n\n`;
+  for (const client of sseClients) {
+    if (client.sid !== job.sessionId) continue;
     try {
-      res.write(msg);
+      client.res.write(msg);
     } catch {}
   }
-}
-function emitJob(job) {
-  broadcast({ type: 'job', job: publicJob(job) });
 }
 
 // ── Queue worker ─────────────────────────────────────────────────────────
@@ -182,6 +198,14 @@ app.post('/api/convert', convertLimiter, upload.single('file'), (req, res) => {
   if (shuttingDown) return res.status(503).json({ error: 'Server is shutting down' });
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
+  const sid = readSid(req);
+  if (!isValidSid(sid)) {
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch {}
+    return res.status(400).json({ error: 'Missing or invalid X-Session-Id header' });
+  }
+
   if (!looksLikeHtml(req.file.path)) {
     try {
       fs.unlinkSync(req.file.path);
@@ -192,6 +216,7 @@ app.post('/api/convert', convertLimiter, upload.single('file'), (req, res) => {
   const id = randomUUID();
   const job = {
     id,
+    sessionId: sid,
     filename: req.file.originalname,
     status: 'queued',
     progress: 0,
@@ -205,31 +230,38 @@ app.post('/api/convert', convertLimiter, upload.single('file'), (req, res) => {
   res.json({ id });
 });
 
-app.get('/api/jobs', (_req, res) => {
-  res.json([...jobs.values()].map(publicJob));
+app.get('/api/jobs', (req, res) => {
+  const sid = readSid(req);
+  if (!isValidSid(sid)) return res.status(400).json({ error: 'Missing sid' });
+  res.json([...jobs.values()].filter((j) => j.sessionId === sid).map(publicJob));
 });
 
 app.get('/api/events', (req, res) => {
+  const sid = readSid(req);
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache, no-transform',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
-    // Firebase Hosting buffers SSE — clients connect directly to the
-    // Cloud Run URL for /api/events to bypass it. Permissive CORS is
-    // safe here because the response is read-only public job state.
+    // SSE client comes through CORS — Firebase Hosting buffers the
+    // streaming response so the browser hits Cloud Run directly. Allow
+    // any origin: the snapshot is now scoped to the caller's sid.
     'Access-Control-Allow-Origin': '*',
   });
-  // Force the response headers + a 2KB padding comment out of any upstream
-  // buffer (Cloud Run, Firebase Hosting CDN, browsers all sometimes wait
-  // for ~2KB before exposing a streaming response to the consumer).
   res.flushHeaders();
+  // 2KB padding flushes Cloud Run / CDN / browser stream buffers.
   res.write(`: ${' '.repeat(2048)}\n\n`);
-  res.write(
-    `data: ${JSON.stringify({ type: 'snapshot', jobs: [...jobs.values()].map(publicJob) })}\n\n`,
-  );
-  sseClients.add(res);
-  // Keepalive ping every 15s — proxies often kill idle connections.
+
+  // Without a valid sid we still keep the stream open (so the client
+  // doesn't fight an auto-reconnect loop) but send an empty snapshot
+  // and never push any future jobs.
+  const snap = isValidSid(sid)
+    ? [...jobs.values()].filter((j) => j.sessionId === sid).map(publicJob)
+    : [];
+  res.write(`data: ${JSON.stringify({ type: 'snapshot', jobs: snap })}\n\n`);
+
+  const client = { res, sid: isValidSid(sid) ? sid : null };
+  sseClients.add(client);
   const ping = setInterval(() => {
     try {
       res.write(': ping\n\n');
@@ -237,13 +269,16 @@ app.get('/api/events', (req, res) => {
   }, 15000);
   req.on('close', () => {
     clearInterval(ping);
-    sseClients.delete(res);
+    sseClients.delete(client);
   });
 });
 
 app.get('/api/download/:id', (req, res) => {
+  const sid = readSid(req);
+  if (!isValidSid(sid)) return res.status(404).end();
   const job = jobs.get(req.params.id);
-  if (!job || !job.output || !fs.existsSync(job.output)) {
+  // 404 (not 403) for sid mismatch so we don't leak existence of the job.
+  if (!job || job.sessionId !== sid || !job.output || !fs.existsSync(job.output)) {
     return res.status(404).end();
   }
   const niceName = (job.filename.replace(/\.html?$/i, '') || 'export') + '.mp4';

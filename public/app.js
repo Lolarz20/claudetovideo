@@ -6,6 +6,32 @@ const queue = document.getElementById('queue');
 
 const jobs = new Map();
 
+// Session ID — opaque UUID minted once per browser, kept in localStorage.
+// Server scopes job visibility to whoever sent the matching sid, so other
+// visitors can't see your filenames or download your MP4s. Clearing
+// localStorage means losing access to your own past jobs (their files
+// stay on the server but the sid that owns them is gone).
+const SID_KEY = 'cv:sid';
+function getSid() {
+  let s = null;
+  try {
+    s = localStorage.getItem(SID_KEY);
+  } catch {}
+  if (!s || !/^[0-9a-f-]{36}$/i.test(s)) {
+    s =
+      (crypto.randomUUID && crypto.randomUUID()) ||
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+      });
+    try {
+      localStorage.setItem(SID_KEY, s);
+    } catch {}
+  }
+  return s;
+}
+const SID = getSid();
+
 function esc(s) {
   return String(s ?? '').replace(
     /[&<>"']/g,
@@ -54,7 +80,7 @@ function renderJob(j) {
       j.status === 'done'
         ? `
       <div class="job-footer">
-        <a class="job-download" href="/api/download/${j.id}" download>Download MP4 ↓</a>
+        <a class="job-download" href="/api/download/${j.id}?sid=${encodeURIComponent(SID)}" download>Download MP4 ↓</a>
       </div>
     `
         : ''
@@ -116,7 +142,11 @@ async function uploadFile(file) {
   fd.append('file', file);
 
   try {
-    const r = await fetch('/api/convert', { method: 'POST', body: fd });
+    const r = await fetch('/api/convert', {
+      method: 'POST',
+      body: fd,
+      headers: { 'X-Session-Id': SID },
+    });
     const data = await r.json().catch(() => ({}));
     jobs.delete(tmpId);
     if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
@@ -138,7 +168,10 @@ async function uploadFile(file) {
 // Firebase Hosting buffers Cloud Run responses, which breaks SSE. Talk to
 // the Cloud Run URL directly for the event stream — POST / download still
 // go through the Hosting rewrite so the user sees a single domain.
-const SSE_URL = document.querySelector('meta[name="sse-url"]')?.content || '/api/events';
+const SSE_BASE = document.querySelector('meta[name="sse-url"]')?.content || '/api/events';
+// EventSource doesn't allow custom headers, so the sid travels as a
+// query param. Server reads either header or ?sid=… interchangeably.
+const SSE_URL = SSE_BASE + (SSE_BASE.includes('?') ? '&' : '?') + 'sid=' + encodeURIComponent(SID);
 
 function connect() {
   const es = new EventSource(SSE_URL);
