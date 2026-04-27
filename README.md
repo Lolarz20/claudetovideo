@@ -57,11 +57,6 @@ claudetovideo film.html -o out.mp4 --fps 30
 
 ## Examples
 
-<!-- TODO: replace these with three side-by-side comparison GIFs:        -->
-<!--   1. Default (1080p60, CRF 15, 2× supersample)                       -->
-<!--   2. --fast (≈3× faster, slightly lower quality)                     -->
-<!--   3. --crf 0 --preset veryslow (archival lossless)                   -->
-
 ```bash
 # Default — highest quality
 claudetovideo film.html
@@ -100,7 +95,7 @@ for each frame i in 0..duration*fps:
   page.screenshot()  →  PNG  →  ffmpeg stdin
 ```
 
-Output is rendered at 2× supersampling, then downscaled with Lanczos in ffmpeg — cheaper SSAA than asking Chromium to render at `devicePixelRatio = 2` everywhere. H.264 at CRF 15, BT.709 colorspace, `+faststart` for instant web playback.
+Output is rendered at 2× supersampling (`deviceScaleFactor: 2` in Playwright), then downscaled with Lanczos in ffmpeg. This gives clean SSAA on small fonts and thin lines — at the cost of 4× the pixels per frame, but ffmpeg's Lanczos is fast. H.264 at CRF 15, BT.709 colorspace, `+faststart` for instant web playback.
 
 No modification of the input HTML. All injection is browser-side.
 
@@ -122,19 +117,15 @@ No modification of the input HTML. All injection is browser-side.
 
 ## Self-host the web UI
 
-The repo also ships an Express server with drag-and-drop upload, a job queue, and SSE progress streaming.
+The repo also ships an Express server with drag-and-drop upload, a queue, and SSE progress. Hardened for public hosting (rate limits, magic-byte validation, graceful drain).
 
 ```bash
 git clone https://github.com/Lolarz20/claudetovideo
-cd claudetovideo
-npm install
-npm start
+cd claudetovideo && npm install && npm start
 # → http://localhost:3000
 ```
 
-Hardened defaults for public hosting: per-IP rate limit (configurable via `RATE_LIMIT_PER_HOUR`), HTML magic-byte validation, 5 MB upload cap, stricter render limits (30 s / 1800 frames / 10 s frame timeout), graceful `SIGTERM` drain.
-
-For Firebase Hosting + Cloud Run deployment see [DEPLOY.md](./DEPLOY.md).
+See [DEPLOY.md](./DEPLOY.md) for Firebase Hosting + Cloud Run setup.
 
 ## Limitations
 
