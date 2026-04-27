@@ -215,6 +215,10 @@ app.get('/api/events', (req, res) => {
     'Cache-Control': 'no-cache, no-transform',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
+    // Firebase Hosting buffers SSE — clients connect directly to the
+    // Cloud Run URL for /api/events to bypass it. Permissive CORS is
+    // safe here because the response is read-only public job state.
+    'Access-Control-Allow-Origin': '*',
   });
   // Force the response headers + a 2KB padding comment out of any upstream
   // buffer (Cloud Run, Firebase Hosting CDN, browsers all sometimes wait

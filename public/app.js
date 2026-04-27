@@ -135,8 +135,14 @@ async function uploadFile(file) {
 }
 
 // ── SSE: live job updates ───────────────────────────────────────
+// Firebase Hosting buffers Cloud Run responses, which breaks SSE. Talk to
+// the Cloud Run URL directly for the event stream — POST / download still
+// go through the Hosting rewrite so the user sees a single domain.
+const SSE_URL =
+  document.querySelector('meta[name="sse-url"]')?.content || '/api/events';
+
 function connect() {
-  const es = new EventSource('/api/events');
+  const es = new EventSource(SSE_URL);
   es.addEventListener('message', (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === 'snapshot') {
