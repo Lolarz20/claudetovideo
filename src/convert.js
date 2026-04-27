@@ -39,7 +39,14 @@ async function convert({
       };
 
   log.info(`Launching Chromium (${headed ? 'headed' : 'headless'})…`);
-  const browser = await chromium.launch({ headless: !headed });
+  // --disable-dev-shm-usage avoids a crash in containers where /dev/shm
+  // is too small for Chromium's IPC. --no-sandbox is harmless inside the
+  // already-sandboxed Cloud Run container and required when the image
+  // doesn't grant the binary the kernel capabilities it expects.
+  const browser = await chromium.launch({
+    headless: !headed,
+    args: ['--no-sandbox', '--disable-dev-shm-usage'],
+  });
 
   let capture, encoder;
   try {
