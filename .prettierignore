@@ -1,0 +1,9 @@
+node_modules
+*.mp4
+*.webm
+*.gif
+_tmp
+.jobs
+.firebase
+coverage
+package-lock.json

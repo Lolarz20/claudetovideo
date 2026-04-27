@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-const path = require('path');
 const { convert } = require('../src/convert.js');
+const { parseArgs } = require('../src/parse-args.js');
 
 function printUsage() {
   console.log(`
@@ -19,10 +19,14 @@ Options:
                          18=visually-lossless, 23=default.
   --preset <name>        libx264 preset: ultrafast, superfast, veryfast,
                          faster, fast, medium, slow (default), slower, veryslow.
+  --max-duration <sec>   Reject Stage longer than N seconds (default: 60).
+                         Safety limit; raise if you trust the input.
+  --max-frames <n>       Reject if duration*fps would exceed N (default: 7200).
+  --frame-timeout <ms>   Per-frame render timeout (default: 15000).
   --fast                 Shortcut: --ss 1 --crf 20 --preset medium.
                          About 3× faster, slightly lower quality.
   --headed               Show browser window (debug)
-  --verbose              Show ffmpeg output
+  --verbose              Show ffmpeg output and full diagnostics on error
   -h, --help             Show this help
 
 Examples:
@@ -33,47 +37,6 @@ Examples:
 `);
 }
 
-function parseArgs(argv) {
-  const args = {
-    fps: 60,
-    supersample: 2,
-    crf: 15,
-    preset: 'slow',
-    headed: false,
-    verbose: false,
-  };
-  const rest = [];
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '-h' || a === '--help') { args.help = true; }
-    else if (a === '-o' || a === '--output') { args.output = argv[++i]; }
-    else if (a === '--fps') { args.fps = parseInt(argv[++i], 10); }
-    else if (a === '--ss' || a === '--supersample') { args.supersample = parseInt(argv[++i], 10); }
-    else if (a === '--crf') { args.crf = parseInt(argv[++i], 10); }
-    else if (a === '--preset') { args.preset = argv[++i]; }
-    else if (a === '--fast') { args.supersample = 1; args.crf = 20; args.preset = 'medium'; }
-    else if (a === '--headed') { args.headed = true; }
-    else if (a === '--verbose') { args.verbose = true; }
-    else if (a.startsWith('-')) { throw new Error(`Unknown option: ${a}`); }
-    else { rest.push(a); }
-  }
-  if (args.help) return args;
-  if (rest.length !== 1) throw new Error('Expected exactly one input file. Pass --help for usage.');
-  args.input = rest[0];
-  if (!Number.isFinite(args.fps) || args.fps <= 0) throw new Error('--fps must be a positive number');
-  if (!Number.isFinite(args.supersample) || args.supersample < 1 || args.supersample > 4) {
-    throw new Error('--ss must be 1, 2, 3, or 4');
-  }
-  if (!Number.isFinite(args.crf) || args.crf < 0 || args.crf > 51) {
-    throw new Error('--crf must be between 0 and 51');
-  }
-  if (!args.output) {
-    const p = path.parse(args.input);
-    args.output = path.join(p.dir, p.name + '.mp4');
-  }
-  return args;
-}
-
 (async () => {
   let args;
   try {
@@ -82,7 +45,10 @@ function parseArgs(argv) {
     console.error(`Error: ${err.message}`);
     process.exit(2);
   }
-  if (args.help) { printUsage(); process.exit(0); }
+  if (args.help) {
+    printUsage();
+    process.exit(0);
+  }
 
   try {
     await convert({
@@ -94,6 +60,9 @@ function parseArgs(argv) {
       preset: args.preset,
       headed: args.headed,
       verbose: args.verbose,
+      maxDuration: args.maxDuration,
+      maxFrames: args.maxFrames,
+      frameTimeout: args.frameTimeout,
     });
   } catch (err) {
     console.error(`Error: ${err.message}`);

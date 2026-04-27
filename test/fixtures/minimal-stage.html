@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Minimal Stage Fixture</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #000;
+      }
+      #root {
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!--
+      Minimal Claude-Design-shaped HTML used by the smoke test.
+      Goal: present a React UMD bundle that:
+        1. Sets window.React via a UMD-style pattern (the inject.js trap
+           depends on intercepting setting on window.React).
+        2. Mounts a <Stage> component whose props look like the real
+           one (width/height/duration as numbers).
+        3. Exposes a TimelineContext.Provider whose value carries
+           {time, duration, playing, setTime, setPlaying}.
+
+      We use unpkg in CI for simplicity; if that flakes we'll bundle
+      React locally as test/fixtures/vendor/.
+    -->
+    <script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script>
+      (function () {
+        const e = React.createElement;
+        const TimelineContext = React.createContext(null);
+
+        // Mimic Claude Design's Stage: takes width/height/duration props,
+        // owns timeline state, renders children inside a TimelineContext.Provider.
+        function Stage(props) {
+          const [time, setTime] = React.useState(0);
+          const [playing, setPlaying] = React.useState(false);
+          const value = { time, duration: props.duration, playing, setTime, setPlaying };
+          // Visual: a moving white bar so frames are deterministic but distinct.
+          const x = (time / props.duration) * (props.width - 40);
+          return e(
+            TimelineContext.Provider,
+            { value },
+            e(
+              'div',
+              {
+                style: {
+                  position: 'relative',
+                  width: props.width + 'px',
+                  height: props.height + 'px',
+                  background: '#0a0a0f',
+                  overflow: 'hidden',
+                },
+              },
+              e('div', {
+                style: {
+                  position: 'absolute',
+                  top: '50%',
+                  left: x + 'px',
+                  width: '40px',
+                  height: '40px',
+                  marginTop: '-20px',
+                  background: '#7d45b5',
+                  borderRadius: '8px',
+                },
+              }),
+              e(
+                'div',
+                {
+                  style: {
+                    position: 'absolute',
+                    bottom: '12px',
+                    left: '12px',
+                    color: '#e8e6f0',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                  },
+                },
+                't=' + time.toFixed(2) + 's',
+              ),
+            ),
+          );
+        }
+        Stage.displayName = 'Stage';
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(e(Stage, { width: 640, height: 360, duration: 2 }));
+      })();
+    </script>
+  </body>
+</html>

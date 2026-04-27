@@ -1,0 +1,58 @@
+name: Bug report
+description: Something is broken
+title: '[bug] '
+labels: ['bug', 'needs-triage']
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, what did you get?
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Exact command
+      placeholder: 'npx claudetovideo film.html out.mp4 --fps 30'
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: claudetovideo version
+      description: 'Output of `claudetovideo --version` or your installed version'
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      description: 'Output of `node --version`'
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output (run with --verbose)
+      description: Paste the full output of the failing command, including the stack trace if --verbose was on.
+      render: shell
+  - type: checkboxes
+    id: html
+    attributes:
+      label: Can you share the HTML file?
+      description: We can usually reproduce a Stage detection bug from the file alone.
+      options:
+        - label: I attached the HTML file (or a minimal repro)
+        - label: I can't share but I can describe what's in it

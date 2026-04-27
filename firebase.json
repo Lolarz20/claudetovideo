@@ -3,11 +3,7 @@
     "public": "public",
     "cleanUrls": true,
     "trailingSlash": false,
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "/api/**",
@@ -34,9 +30,7 @@
       },
       {
         "source": "**/*.@(js|css)",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=3600" }
-        ]
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
       }
     ]
   }
