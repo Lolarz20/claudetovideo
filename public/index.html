@@ -526,6 +526,23 @@
         word-break: break-word;
       }
 
+      /* ── Demo section ───────────────────────────────────────── */
+      .demo {
+        text-align: center;
+      }
+      .demo .section-label,
+      .demo h2 {
+        text-align: center;
+      }
+      .demo h2 {
+        margin-bottom: 32px;
+      }
+      .demo .section-note {
+        max-width: 600px;
+        margin: 24px auto 0;
+        text-align: center;
+      }
+
       /* ── Responsive tweaks ──────────────────────────────────── */
       @media (max-width: 600px) {
         section {
@@ -567,12 +584,6 @@
     <main>
       <section class="hero">
         <div class="container">
-          <div class="hero-frame">
-            <img
-              src="/hero.gif"
-              alt="claudetovideo demo: a Claude Design HTML film exporting to MP4"
-            />
-          </div>
           <h1>The missing <em>Export to MP4</em> button for Claude Design.</h1>
           <p class="lede">
             Drop a Claude Design HTML animation. Get back a 1080p60 MP4. Frame-accurate,
@@ -591,9 +602,23 @@
         </div>
       </section>
 
+      <section class="try" id="try">
+        <div class="container">
+          <div class="section-label">Try in browser</div>
+          <h2>Drop a file</h2>
+          <label class="dropzone" id="drop">
+            <h3>Drop Claude Design HTML</h3>
+            <p>or click to choose a file — we'll render it to MP4</p>
+            <span class="btn btn-primary">Choose file</span>
+            <div class="hint">.html files only · up to 5 MB · server-side render</div>
+            <input type="file" id="file" accept=".html,text/html" />
+          </label>
+        </div>
+      </section>
+
       <section class="install">
         <div class="container">
-          <div class="section-label">Install via CLI</div>
+          <div class="section-label">Or install the CLI</div>
           <h2>Run anywhere with one command</h2>
           <div class="code-block">
             <code id="install-cmd">npx claudetovideo film.html</code>
@@ -605,20 +630,6 @@
             Zero system dependencies — Chromium and ffmpeg bundled via npm install. Works on macOS,
             Linux, Windows. Node 20+.
           </p>
-        </div>
-      </section>
-
-      <section class="try" id="try">
-        <div class="container">
-          <div class="section-label">Or try in browser</div>
-          <h2>Drop a file</h2>
-          <label class="dropzone" id="drop">
-            <h3>Drop Claude Design HTML</h3>
-            <p>or click to choose a file — we'll render it to MP4</p>
-            <span class="btn btn-primary">Choose file</span>
-            <div class="hint">.html files only · up to 5 MB · server-side render</div>
-            <input type="file" id="file" accept=".html,text/html" />
-          </label>
         </div>
       </section>
 
@@ -652,6 +663,23 @@
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="demo">
+        <div class="container">
+          <div class="section-label">Example output</div>
+          <h2>From Claude Design HTML to a real MP4</h2>
+          <div class="hero-frame">
+            <img
+              src="/hero.gif"
+              alt="A Claude Design animation rendered to MP4 using claudetovideo"
+            />
+          </div>
+          <p class="section-note">
+            Above: the codaro launch film, rendered to MP4 by claudetovideo. Bit-identical
+            regardless of machine speed — same render every time.
+          </p>
         </div>
       </section>
     </main>
