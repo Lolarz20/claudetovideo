@@ -4,6 +4,7 @@ node_modules/
 *.webm
 *.gif
 !assets/hero.gif
+!public/hero.gif
 *.jpg
 .DS_Store
 .claude/

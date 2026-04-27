@@ -3,21 +3,36 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>claudetovideo — Claude Design HTML to MP4</title>
+    <title>claudetovideo — Export Claude Design HTML to MP4</title>
     <meta
       name="description"
-      content="Upload a Claude Design HTML animation and get back an MP4 video."
+      content="The missing Export to MP4 button for Claude Design. Frame-accurate, deterministic, zero system dependencies. Run with npx claudetovideo."
     />
+    <meta name="theme-color" content="#0a0a0f" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="claudetovideo — Export Claude Design HTML to MP4" />
+    <meta
+      property="og:description"
+      content="Drop a Claude Design HTML animation. Get back a 1080p60 MP4. npx claudetovideo film.html"
+    />
+    <meta property="og:image" content="/hero.gif" />
+    <meta property="og:url" content="https://fluted-quasar-464812-c6.web.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/hero.gif" />
+
     <style>
       :root {
         --bg: #0a0a0f;
         --bg-elev: #13131a;
+        --bg-elev-2: #1a1a23;
         --border: rgba(255, 255, 255, 0.08);
         --border-hover: rgba(255, 255, 255, 0.16);
         --text: #e8e6f0;
         --text-muted: #8a8797;
         --text-dim: #56546a;
         --accent: #7d45b5;
+        --accent-hi: #9d6ad5;
         --accent-soft: rgba(125, 69, 181, 0.08);
         --accent-border: rgba(125, 69, 181, 0.4);
         --ok: #5ab48d;
@@ -28,21 +43,20 @@
         padding: 0;
         box-sizing: border-box;
       }
-      html,
-      body {
-        height: 100%;
+      html {
+        scroll-behavior: smooth;
       }
       body {
         background: var(--bg);
         color: var(--text);
         font:
-          15px/1.5 -apple-system,
+          15px/1.6 Inter,
+          -apple-system,
           BlinkMacSystemFont,
-          Inter,
           system-ui,
           sans-serif;
         -webkit-font-smoothing: antialiased;
-        overflow: hidden;
+        min-height: 100vh;
       }
 
       /* Ambient gradient — matches Claude Design aesthetic */
@@ -50,25 +64,238 @@
         content: '';
         position: fixed;
         inset: 0;
-        background: radial-gradient(60% 50% at 50% 50%, rgba(125, 69, 181, 0.12), transparent 70%);
+        background:
+          radial-gradient(60% 40% at 50% 0%, rgba(125, 69, 181, 0.18), transparent 70%),
+          radial-gradient(40% 30% at 100% 30%, rgba(125, 69, 181, 0.06), transparent 70%);
         pointer-events: none;
+        z-index: 0;
       }
 
-      main {
-        height: 100vh;
+      a {
+        color: var(--accent-hi);
+        text-decoration: none;
+        transition: color 180ms ease;
+      }
+      a:hover {
+        color: #b387df;
+      }
+
+      .container {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 0 24px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── Top bar ────────────────────────────────────────────── */
+      header {
+        position: relative;
+        z-index: 2;
+        padding: 24px 0;
+      }
+      header .container {
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 40px 24px;
-        position: relative;
+        justify-content: space-between;
+      }
+      .brand-tiny {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+      .top-nav {
+        display: flex;
+        gap: 24px;
+        font-size: 13px;
+      }
+      .top-nav a {
+        color: var(--text-muted);
+      }
+      .top-nav a:hover {
+        color: var(--text);
       }
 
-      .dropzone {
+      /* ── Hero ───────────────────────────────────────────────── */
+      .hero {
+        text-align: center;
+        padding: 40px 0 80px;
+      }
+      .hero-frame {
+        max-width: 760px;
+        margin: 0 auto 48px;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        box-shadow:
+          0 20px 60px -20px rgba(125, 69, 181, 0.4),
+          0 8px 30px -10px rgba(0, 0, 0, 0.6);
+        background: var(--bg-elev);
+      }
+      .hero-frame img {
+        display: block;
         width: 100%;
+        height: auto;
+      }
+      .hero h1 {
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        margin-bottom: 20px;
         max-width: 720px;
-        padding: 100px 48px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .hero h1 em {
+        font-style: normal;
+        background: linear-gradient(135deg, var(--accent-hi), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero .lede {
+        font-size: 18px;
+        color: var(--text-muted);
+        max-width: 580px;
+        margin: 0 auto 36px;
+      }
+      .cta-row {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: 10px;
+        font: inherit;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        border: 0;
+        text-decoration: none;
+        transition:
+          background 180ms ease,
+          border-color 180ms ease,
+          color 180ms ease,
+          transform 120ms ease;
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--accent-hi);
+        color: #fff;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border-hover);
+      }
+      .btn-secondary:hover {
+        border-color: var(--text-muted);
+        color: var(--text);
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--accent-hi);
+        outline-offset: 2px;
+      }
+
+      /* ── Section scaffolding ────────────────────────────────── */
+      section {
+        padding: 80px 0;
+        position: relative;
+        z-index: 1;
+      }
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--accent-hi);
+        margin-bottom: 14px;
+      }
+      section h2 {
+        font-size: clamp(24px, 3vw, 32px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 24px;
+      }
+      .section-note {
+        color: var(--text-muted);
+        margin-top: 16px;
+        font-size: 14px;
+      }
+
+      /* ── Code block ─────────────────────────────────────────── */
+      .code-block {
+        position: relative;
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px 26px;
+        padding-right: 100px;
+        font:
+          14px/1.5 ui-monospace,
+          Menlo,
+          Consolas,
+          monospace;
+        color: var(--text);
+        overflow-x: auto;
+      }
+      .code-block::before {
+        content: '$';
+        color: var(--text-dim);
+        margin-right: 12px;
+        user-select: none;
+      }
+      .copy-btn {
+        position: absolute;
+        top: 50%;
+        right: 14px;
+        transform: translateY(-50%);
+        padding: 6px 12px;
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-hover);
+        color: var(--text-muted);
+        border-radius: 6px;
+        font: inherit, sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 180ms ease,
+          color 180ms ease;
+      }
+      .copy-btn:hover {
+        background: var(--accent-soft);
+        color: var(--text);
+      }
+      .copy-btn.copied {
+        color: var(--ok);
+        border-color: rgba(90, 180, 141, 0.4);
+      }
+
+      /* ── Drop zone (preserves app.js DOM contract) ──────────── */
+      .dropzone {
+        display: block;
+        width: 100%;
+        padding: 70px 32px;
         border: 2px dashed var(--accent-border);
-        border-radius: 20px;
+        border-radius: 16px;
         background: var(--accent-soft);
         text-align: center;
         cursor: pointer;
@@ -84,62 +311,111 @@
       .dropzone.drag {
         border-color: var(--accent);
         background: rgba(125, 69, 181, 0.18);
-        transform: scale(1.01);
+        transform: scale(1.005);
       }
-
-      .brand {
-        font-size: 11px;
+      .dropzone h3 {
+        font-size: 22px;
         font-weight: 600;
-        letter-spacing: 0.28em;
-        text-transform: uppercase;
-        color: var(--text-dim);
-        margin-bottom: 24px;
-      }
-      .dropzone h1 {
-        font-size: 28px;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        line-height: 1.25;
-        margin-bottom: 10px;
+        letter-spacing: -0.01em;
+        margin-bottom: 8px;
       }
       .dropzone p {
         color: var(--text-muted);
-        margin-bottom: 32px;
+        margin-bottom: 24px;
       }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: var(--accent);
-        color: white;
-        border: 0;
-        border-radius: 10px;
-        font: inherit;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background 180ms ease;
-      }
-      .btn:hover {
-        background: #8e56c7;
-      }
-      .btn:focus-visible {
-        outline: 2px solid #fff4;
-        outline-offset: 2px;
-      }
-
       .hint {
-        margin-top: 24px;
+        margin-top: 18px;
         font-size: 12px;
         color: var(--text-dim);
       }
-
       input[type='file'] {
         display: none;
       }
 
-      /* ── Queue widget ───────────────────────────────────────── */
+      /* ── How it works cards ─────────────────────────────────── */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 8px;
+      }
+      .card {
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 22px;
+        transition: border-color 180ms ease;
+      }
+      .card:hover {
+        border-color: var(--border-hover);
+      }
+      .card-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        border: 1px solid var(--accent-border);
+        color: var(--accent-hi);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+      .card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .card p {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.55;
+      }
+      .card code {
+        background: var(--bg-elev-2);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: var(--text);
+      }
+
+      /* ── Footer ─────────────────────────────────────────────── */
+      footer {
+        position: relative;
+        z-index: 1;
+        border-top: 1px solid var(--border);
+        margin-top: 40px;
+        padding: 48px 0 56px;
+        text-align: center;
+      }
+      .footer-built {
+        color: var(--text-muted);
+        margin-bottom: 18px;
+        font-size: 14px;
+      }
+      .socials {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+      }
+      .socials a {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .socials a:hover {
+        color: var(--text);
+      }
+      .footer-meta {
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      /* ── Queue widget (preserved from previous version) ─────── */
       .queue {
         position: fixed;
         bottom: 20px;
@@ -150,7 +426,7 @@
         flex-direction: column;
         gap: 8px;
         overflow-y: auto;
-        z-index: 10;
+        z-index: 50;
       }
       .queue:empty {
         display: none;
@@ -162,13 +438,13 @@
         background: var(--border);
         border-radius: 2px;
       }
-
       .job {
         background: var(--bg-elev);
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 12px 14px;
         animation: slide-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
       }
       @keyframes slide-in {
         from {
@@ -180,7 +456,6 @@
           transform: translateX(0);
         }
       }
-
       .job-top {
         display: flex;
         align-items: baseline;
@@ -209,7 +484,6 @@
       .job.error .job-status {
         color: var(--err);
       }
-
       .bar {
         height: 3px;
         background: rgba(255, 255, 255, 0.06);
@@ -229,7 +503,6 @@
       .job.error .bar-fill {
         background: var(--err);
       }
-
       .job-footer {
         margin-top: 10px;
         display: flex;
@@ -238,7 +511,7 @@
         font-size: 12px;
       }
       .job-download {
-        color: var(--accent);
+        color: var(--accent-hi);
         text-decoration: none;
         font-weight: 600;
       }
@@ -252,22 +525,194 @@
         font-family: ui-monospace, Menlo, Consolas, monospace;
         word-break: break-word;
       }
+
+      /* ── Responsive tweaks ──────────────────────────────────── */
+      @media (max-width: 600px) {
+        section {
+          padding: 56px 0;
+        }
+        .hero {
+          padding: 24px 0 48px;
+        }
+        .dropzone {
+          padding: 48px 20px;
+        }
+        .code-block {
+          padding-right: 88px;
+          font-size: 13px;
+        }
+        .queue {
+          width: calc(100% - 24px);
+          right: 12px;
+          bottom: 12px;
+        }
+      }
     </style>
   </head>
   <body>
+    <header>
+      <div class="container">
+        <div class="brand-tiny">claudetovideo</div>
+        <nav class="top-nav">
+          <a href="https://www.npmjs.com/package/claudetovideo" target="_blank" rel="noopener"
+            >npm</a
+          >
+          <a href="https://github.com/Lolarz20/claudetovideo" target="_blank" rel="noopener"
+            >GitHub</a
+          >
+        </nav>
+      </div>
+    </header>
+
     <main>
-      <label class="dropzone" id="drop">
-        <div class="brand">claudetovideo</div>
-        <h1>Drop Claude Design HTML</h1>
-        <p>or click to choose a file — we'll render it to MP4</p>
-        <span class="btn" id="browse-hint">Choose file</span>
-        <div class="hint">.html files only · up to 20 MB</div>
-        <input type="file" id="file" accept=".html,text/html" />
-      </label>
+      <section class="hero">
+        <div class="container">
+          <div class="hero-frame">
+            <img
+              src="/hero.gif"
+              alt="claudetovideo demo: a Claude Design HTML film exporting to MP4"
+            />
+          </div>
+          <h1>The missing <em>Export to MP4</em> button for Claude Design.</h1>
+          <p class="lede">
+            Drop a Claude Design HTML animation. Get back a 1080p60 MP4. Frame-accurate,
+            deterministic, zero system dependencies.
+          </p>
+          <div class="cta-row">
+            <a href="#try" class="btn btn-primary">Try in browser ↓</a>
+            <a
+              href="https://github.com/Lolarz20/claudetovideo"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-secondary"
+              >View on GitHub →</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="install">
+        <div class="container">
+          <div class="section-label">Install via CLI</div>
+          <h2>Run anywhere with one command</h2>
+          <div class="code-block">
+            <code id="install-cmd">npx claudetovideo film.html</code>
+            <button class="copy-btn" data-copy="npx claudetovideo film.html" type="button">
+              Copy
+            </button>
+          </div>
+          <p class="section-note">
+            Zero system dependencies — Chromium and ffmpeg bundled via npm install. Works on macOS,
+            Linux, Windows. Node 20+.
+          </p>
+        </div>
+      </section>
+
+      <section class="try" id="try">
+        <div class="container">
+          <div class="section-label">Or try in browser</div>
+          <h2>Drop a file</h2>
+          <label class="dropzone" id="drop">
+            <h3>Drop Claude Design HTML</h3>
+            <p>or click to choose a file — we'll render it to MP4</p>
+            <span class="btn btn-primary">Choose file</span>
+            <div class="hint">.html files only · up to 5 MB · server-side render</div>
+            <input type="file" id="file" accept=".html,text/html" />
+          </label>
+        </div>
+      </section>
+
+      <section class="how">
+        <div class="container">
+          <div class="section-label">How it works</div>
+          <h2>Frame-accurate, not screen-capture</h2>
+          <div class="cards">
+            <div class="card">
+              <div class="card-num">1</div>
+              <h3>Trap React</h3>
+              <p>
+                Intercept <code>window.React</code> before Claude Design's UMD bundle runs. Sniff
+                every <code>createElement</code> for the timeline context shape.
+              </p>
+            </div>
+            <div class="card">
+              <div class="card-num">2</div>
+              <h3>Drive the timeline</h3>
+              <p>
+                Once we have <code>setTime</code>, Playwright steps the animation frame by frame at
+                2× supersampling.
+              </p>
+            </div>
+            <div class="card">
+              <div class="card-num">3</div>
+              <h3>Encode</h3>
+              <p>
+                Pipe PNGs to ffmpeg. Lanczos downscale, H.264 CRF 15, BT.709, +faststart.
+                Bit-identical regardless of machine speed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <footer>
+      <div class="container">
+        <p class="footer-built">
+          Built by
+          <a href="https://soysal.pl" target="_blank" rel="noopener">Radek Soysal</a> alongside
+          <a href="https://codaro.dev" target="_blank" rel="noopener">codaro.dev</a>
+        </p>
+        <nav class="socials">
+          <a href="https://github.com/Lolarz20" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://x.com/radek_soysal" target="_blank" rel="noopener">X</a>
+          <a
+            href="https://www.linkedin.com/in/radoslaw-soysal-748065267"
+            target="_blank"
+            rel="noopener"
+            >LinkedIn</a
+          >
+          <a href="https://soysal.pl" target="_blank" rel="noopener">soysal.pl</a>
+        </nav>
+        <div class="footer-meta">
+          MIT ·
+          <a href="https://github.com/Lolarz20/claudetovideo" target="_blank" rel="noopener"
+            >v0.1.0</a
+          >
+          ·
+          <a href="https://www.npmjs.com/package/claudetovideo" target="_blank" rel="noopener"
+            >npm</a
+          >
+        </div>
+      </div>
+    </footer>
 
     <div class="queue" id="queue" aria-live="polite"></div>
 
+    <script>
+      // Copy-to-clipboard for code blocks
+      document.querySelectorAll('.copy-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const text = btn.dataset.copy || '';
+          try {
+            await navigator.clipboard.writeText(text);
+            const orig = btn.textContent;
+            btn.textContent = 'Copied';
+            btn.classList.add('copied');
+            setTimeout(() => {
+              btn.textContent = orig;
+              btn.classList.remove('copied');
+            }, 1400);
+          } catch {
+            // Fallback: select-on-click for browsers without clipboard API
+            const range = document.createRange();
+            range.selectNode(document.getElementById('install-cmd'));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+          }
+        });
+      });
+    </script>
     <script src="/app.js"></script>
   </body>
 </html>
